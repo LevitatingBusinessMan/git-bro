@@ -1,0 +1,5 @@
+[linux]
+url="https://github.com/torvalds/linux.git"
+branch="main"
+scripts="all" # all, none or array
+scripts-exclude=[]

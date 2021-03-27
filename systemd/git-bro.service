@@ -1,0 +1,5 @@
+[Unit]
+Description=Monitor git repositories
+
+[Service]
+ExecStart=%h/.local/bin/git-bro.rb
