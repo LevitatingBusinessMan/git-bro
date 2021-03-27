@@ -25,7 +25,20 @@ config = Tomlrb.load_file "#{Dir.home}/.config/git-bro/config.toml"
 
 #Make sure we have a repos folder
 REPOS_DIR = "#{Dir.home}/.local/share/git-bro/repos"
+SCRIPTS_DIR = "#{Dir.home}/.config/git-bro/scripts"
 FileUtils.mkdir_p REPOS_DIR
+FileUtils.mkdir_p SCRIPTS_DIR
+
+def run_scripts(repo)
+	for script in Dir.entries(SCRIPTS_DIR)
+		if system("#{SCRIPTS_DIR}/#{script} #{repo}")
+			puts "Ran script #{script} successfully}"
+		else
+			STDERR.puts "Script #{script} failed"
+		end
+
+	end
+end
 
 repos = []
 for repo in Dir.entries(REPOS_DIR)
@@ -45,6 +58,7 @@ for repo in Dir.entries(REPOS_DIR)
 	if fetch != ""
 		puts "New commits on #{repo}"
 		notify(repo, "New commits found")
+		run_scripts repo
 	end
 
 end
@@ -64,8 +78,4 @@ for url in config["repos"]
 			next
 		end
 	end
-end
-
-def run_scripts()
-	p "scripts are WIP"
 end
