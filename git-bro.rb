@@ -3,20 +3,6 @@ require "tomlrb"
 require "fileutils"
 require "notify"
 
-=begin
-TODO
-
-branches
-supporting repos with the same name but different author
-support deleting repos not mentioned in config
-
-maybe better toml syntax:
-[name]
-url=
-branch=
-
-=end
-
 def notify(repo, msg)
 	Notify.notify "git-bro: #{repo}", msg, { app_name: "git-bro" }
 end
@@ -29,10 +15,12 @@ SCRIPTS_DIR = "#{Dir.home}/.config/git-bro/scripts"
 FileUtils.mkdir_p REPOS_DIR
 FileUtils.mkdir_p SCRIPTS_DIR
 
-def run_scripts(repo)
+def run_scripts(repo, url)
 	for script in Dir.entries(SCRIPTS_DIR)
-		if system("#{SCRIPTS_DIR}/#{script} #{repo}")
-			puts "Ran script #{script} successfully}"
+		next if script == "." or script == ".."
+
+		if system("#{SCRIPTS_DIR}/#{script} #{repo} #{url}")
+			puts "Ran script #{script} successfully"
 		else
 			STDERR.puts "Script #{script} failed"
 		end
@@ -40,12 +28,25 @@ def run_scripts(repo)
 	end
 end
 
-repos = []
+found_repos = []
 for repo in Dir.entries(REPOS_DIR)
 	next if repo == "." or repo == ".."
+
+	#Delete
+	if !config[repo]
+		puts "Deleting #{repo}"
+		FileUtils.rm_rf("#{REPOS_DIR}/#{repo}")
+		next
+	end
+
 	puts "Found #{repo}"
-	repos.push repo
-	#url = `git --git-dir #{REPOS_DIR}/#{repo}/.git config --get remote.origin.url`.delete_suffix "\n"
+	found_repos.push repo
+	url = `git --git-dir #{REPOS_DIR}/#{repo}/.git config --get remote.origin.url`.delete_suffix "\n"
+	
+	if url != config[repo]["url"]
+		puts "Warning: url mis-match at #{repo}"
+	end
+	
 	fetch = `2>&1 git --git-dir #{REPOS_DIR}/#{repo}/.git fetch origin`
 	
 	if $?.exitstatus != 0
@@ -58,18 +59,18 @@ for repo in Dir.entries(REPOS_DIR)
 	if fetch != ""
 		puts "New commits on #{repo}"
 		notify(repo, "New commits found")
-		run_scripts repo
+		run_scripts repo, url
 	end
 
 end
 
 #make sure all repos exist
-for url in config["repos"]
-	name = url.split("/").last.delete_suffix ".git"
+for name in config.keys
+	url = config[name]["url"]
 	
-	#clone repo
-	if !repos.include?(name)
-		puts "Initializing #{name}"
+	#clone missing repo
+	if !found_repos.include?(name)
+		puts "Cloning #{name} (missing)"
 		notify(name, "Repo #{name} is missing. Cloning it now.")
 		clone = `git clone #{url} #{REPOS_DIR}/#{name}`
 		if $?.exitstatus != 0
@@ -77,5 +78,6 @@ for url in config["repos"]
 			notify(name, "Failed to clone")
 			next
 		end
+		run_scripts name, url
 	end
 end
