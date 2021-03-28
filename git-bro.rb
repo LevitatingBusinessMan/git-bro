@@ -1,19 +1,28 @@
 #!/usr/bin/ruby
 require "tomlrb"
 require "fileutils"
-require "notify"
-
-def notify(repo, msg)
-	Notify.notify "git-bro: #{repo}", msg, { app_name: "git-bro" }
-end
+require 'libnotify'
 
 config = Tomlrb.load_file "#{Dir.home}/.config/git-bro/config.toml"
+
+@settings = config["settings"]
+config.delete "settings"
 
 #Make sure we have a repos folder
 REPOS_DIR = "#{Dir.home}/.local/share/git-bro/repos"
 SCRIPTS_DIR = "#{Dir.home}/.config/git-bro/scripts"
 FileUtils.mkdir_p REPOS_DIR
 FileUtils.mkdir_p SCRIPTS_DIR
+
+def notify(repo, msg)
+	return if @settings["silent"] == true
+	Libnotify.show(:summary => "git-bro: #{repo}", :body=> msg)
+end
+
+def notify_err(repo, msg)
+	Libnotify.show(:summary => "git-bro: #{repo}", :body=> msg, :urgency => :critical)
+end
+
 
 def run_scripts(repo, url)
 	for script in Dir.entries(SCRIPTS_DIR)
@@ -51,7 +60,7 @@ for repo in Dir.entries(REPOS_DIR)
 	
 	if $?.exitstatus != 0
 		STDERR.puts "Failed to fetch #{repo}:\n#{fetch}"
-		notify(repo, "Failed to fetch")
+		notify_err(repo, "Failed to fetch")
 		next
 	end
 
@@ -59,6 +68,14 @@ for repo in Dir.entries(REPOS_DIR)
 	if fetch != ""
 		puts "New commits on #{repo}"
 		notify(repo, "New commits found")
+
+		merge = `2>&1 git --git-dir #{REPOS_DIR}/#{repo}/.git merge`
+
+		if $?.exitstatus != 0
+			STDERR.puts "Failed to merge #{repo}:\n#{fetch}"
+			notify_err(repo, "Failed to merge")
+		end
+
 		run_scripts repo, url
 	end
 
@@ -75,9 +92,11 @@ for name in config.keys
 		clone = `git clone #{url} #{REPOS_DIR}/#{name}`
 		if $?.exitstatus != 0
 			STDERR.puts "Failed to clone #{name}:\n#{clone}"
-			notify(name, "Failed to clone")
+			notify_err(name, "Failed to clone")
 			next
 		end
 		run_scripts name, url
 	end
 end
+
+
