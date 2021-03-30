@@ -3,6 +3,10 @@ require "tomlrb"
 require "fileutils"
 require 'libnotify'
 
+CONFIG_PATH = "#{Dir.home}/.config/git-bro/config.toml"
+if !File.file? CONFIG_PATH
+	abort "Please make sure a config file is present at #{CONFIG_PATH}"
+end
 config = Tomlrb.load_file "#{Dir.home}/.config/git-bro/config.toml"
 
 @settings = config["settings"]
