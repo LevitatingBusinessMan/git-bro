@@ -26,7 +26,7 @@ silent = false
 The name of the repo should be unique. The a copy of the tracked repositories is stored at `~/.local/share/git-bro/repos`. More config options should be available in the future.
 
 ## Scripts
-The main point of git-bro is the ability to define custom behavior in scripts. Scripts are stored in `~/.config/git-bro/config.toml`. Any executable file in the scripts directory is automatically run by git-bro when changes to a repo are detected.
+The main point of git-bro is the ability to define custom behavior in scripts. Scripts are stored in `~/.config/git-bro/scripts`. Any executable file in the scripts directory is automatically run by git-bro when changes to a repo are detected.
 ```SH
 # Scripts are run with the arguments "repo-name remote-url"
 # You can test them by manually running them
