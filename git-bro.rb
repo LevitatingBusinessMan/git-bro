@@ -3,27 +3,28 @@ require "tomlrb"
 require "fileutils"
 require 'libnotify'
 
-CONFIG_PATH = "#{Dir.home}/.config/git-bro/config.toml"
+CONFIG_PATH = ENV["SYSTEM_MODE"] == "true" ? "/etc/git-bro/config.toml" : "#{Dir.home}/.config/git-bro/config.toml"
 if !File.file? CONFIG_PATH
 	abort "Please make sure a config file is present at #{CONFIG_PATH}"
 end
-config = Tomlrb.load_file "#{Dir.home}/.config/git-bro/config.toml"
+config = Tomlrb.load_file CONFIG_PATH
 
-@settings = config["settings"]
+@settings = config["settings"] || {}
 config.delete "settings"
 
 #Make sure we have a repos folder
-REPOS_DIR = "#{Dir.home}/.local/share/git-bro/repos"
-SCRIPTS_DIR = "#{Dir.home}/.config/git-bro/scripts"
+REPOS_DIR =  ENV["SYSTEM_MODE"] == "true" ? "/var/lib/git-bro/repos" : "#{Dir.home}/.local/share/git-bro/repos"
+SCRIPTS_DIR = ENV["SYSTEM_MODE"] == "true" ? "/etc/git-bro/scripts" : "#{Dir.home}/.config/git-bro/scripts"
 FileUtils.mkdir_p REPOS_DIR
 FileUtils.mkdir_p SCRIPTS_DIR
 
 def notify(repo, msg)
-	return if @settings["silent"] == true
+	return if @settings["silent"] == true || ENV["SYSTEM_MODE"] == "true"
 	Libnotify.show(:summary => "git-bro: #{repo}", :body=> msg)
 end
 
 def notify_err(repo, msg)
+	return if ENV["SYSTEM_MODE"] == "true"
 	Libnotify.show(:summary => "git-bro: #{repo}", :body=> msg, :urgency => :critical)
 end
 
@@ -102,5 +103,3 @@ for name in config.keys
 		run_scripts name, url
 	end
 end
-
-
