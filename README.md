@@ -79,7 +79,7 @@ notify-send $1 "$DETAILS"
 #### Clickable notifications via dunst
 This script will make a notification which when clicked will bring you to the github page for the commit.
 ```SH
-#!/bin/sh
+#!/bin/bash
 cd $HOME/.local/share/git-bro/repos/$1
 DETAILS=$(git show -s --format="%an %s (%h)")
 
