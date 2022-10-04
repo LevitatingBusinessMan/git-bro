@@ -16,7 +16,7 @@ git-bro is completely controlled via its config file in `~/.config/git-bro/confi
 #Add a repo like this
 [linux]
 # The remote address to fetch the repo from
-url=https://github.com/torvalds/linux.git
+url="https://github.com/torvalds/linux.git"
 
 # Global settings go here
 [settings]
