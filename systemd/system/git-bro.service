@@ -3,4 +3,4 @@ Description=Monitor git repositories
 
 [Service]
 Environment="SYSTEM_MODE=true"
-ExecStart=%h/.local/bin/git-bro
+ExecStart=/usr/bin/git-bro
