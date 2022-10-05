@@ -1,0 +1,9 @@
+[Unit]
+Description=Runs git-bro every 5 minutes
+
+[Timer]
+OnUnitInactiveSec=300
+Unit=git-bro.service
+
+[Install]
+WantedBy=default.target
