@@ -1,7 +1,7 @@
 #!/usr/bin/ruby
 require "tomlrb"
 require "fileutils"
-require 'libnotify'
+require 'libnotify' unless ENV["SYSTEM_MODE"] == "true"
 
 CONFIG_PATH = ENV["SYSTEM_MODE"] == "true" ? "/etc/git-bro/config.toml" : "#{Dir.home}/.config/git-bro/config.toml"
 if !File.file? CONFIG_PATH
