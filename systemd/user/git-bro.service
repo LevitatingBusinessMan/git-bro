@@ -2,4 +2,4 @@
 Description=Monitor git repositories
 
 [Service]
-ExecStart=%h/.local/bin/git-bro
+ExecStart=git-bro
