@@ -77,7 +77,7 @@ for repo in Dir.entries(REPOS_DIR)
 		merge = `2>&1 git --git-dir #{REPOS_DIR}/#{repo}/.git merge`
 
 		if $?.exitstatus != 0
-			STDERR.puts "Failed to merge #{repo}:\n#{fetch}"
+			STDERR.puts "Failed to merge #{repo}:\n#{merge}"
 			notify_err(repo, "Failed to merge")
 		end
 
