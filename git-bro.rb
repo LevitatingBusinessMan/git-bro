@@ -79,6 +79,7 @@ for repo in Dir.entries(REPOS_DIR)
 		if $?.exitstatus != 0
 			STDERR.puts "Failed to merge #{repo}:\n#{merge}"
 			notify_err(repo, "Failed to merge")
+			next
 		end
 
 		run_scripts repo, url
